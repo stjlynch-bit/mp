@@ -1,0 +1,2098 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Milepost</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-annotation@2.2.1/dist/chartjs-plugin-annotation.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: linear-gradient(135deg, #F4F1EB 0%, #EDE8DF 100%);
+            color: #3D3229;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1440px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        .header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 40px;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .logo {
+            font-size: 24px;
+            font-weight: 700;
+            color: #7BA05B;
+            letter-spacing: -0.5px;
+        }
+
+        .header-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .settings-btn {
+            background: #FFFFFF;
+            border: 1px solid #E2DDD5;
+            border-radius: 8px;
+            padding: 8px 12px;
+            cursor: pointer;
+            color: #8B7E74;
+            font-size: 14px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .settings-btn:hover {
+            background: #F4F1EB;
+            border-color: #7BA05B;
+            color: #7BA05B;
+        }
+
+        .info-badge {
+            background: rgba(123, 160, 91, 0.15);
+            border: 1px solid rgba(123, 160, 91, 0.25);
+            border-radius: 6px;
+            padding: 4px 8px;
+            font-size: 12px;
+            color: #7BA05B;
+        }
+
+        /* Tabs */
+        .tab-bar {
+            display: flex;
+            gap: 24px;
+            border-bottom: 1px solid #E2DDD5;
+            margin-bottom: 30px;
+            padding-bottom: 16px;
+        }
+
+        .tab-btn {
+            background: none;
+            border: none;
+            color: #8B7E74;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            padding: 8px 0;
+            position: relative;
+            transition: color 0.3s ease;
+        }
+
+        .tab-btn:hover {
+            color: #3D3229;
+        }
+
+        .tab-btn.active {
+            color: #7BA05B;
+        }
+
+        .tab-btn.active::after {
+            content: '';
+            position: absolute;
+            bottom: -16px;
+            left: 0;
+            right: 0;
+            height: 2px;
+            background: #7BA05B;
+            border-radius: 1px;
+        }
+
+        /* Tab Content */
+        .tab-content {
+            display: none;
+            animation: fadeIn 0.4s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        /* Goals Page */
+        .goals-header {
+            margin-bottom: 32px;
+        }
+
+        .goals-title {
+            font-size: 28px;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .goals-subtitle {
+            color: #8B7E74;
+            font-size: 14px;
+        }
+
+        .goals-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 40px;
+        }
+
+        /* Goal Card */
+        .goal-card {
+            background: #FFFFFF;
+            border: 1px solid #E2DDD5;
+            border-radius: 12px;
+            padding: 24px;
+            transition: all 0.3s ease;
+            animation: slideUp 0.5s ease backwards;
+        }
+
+        .goal-card:nth-child(1) { animation-delay: 0.05s; }
+        .goal-card:nth-child(2) { animation-delay: 0.1s; }
+        .goal-card:nth-child(3) { animation-delay: 0.15s; }
+        .goal-card:nth-child(4) { animation-delay: 0.2s; }
+        .goal-card:nth-child(5) { animation-delay: 0.25s; }
+
+        @keyframes slideUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .goal-card:hover {
+            background: #FFFFFF;
+            border-color: #7BA05B;
+            transform: translateY(-4px);
+            box-shadow: 0 4px 16px rgba(61, 50, 41, 0.1);
+        }
+
+        .goal-card-title {
+            font-size: 11px;
+            font-weight: 600;
+            color: #8B7E74;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .goal-card-content {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .goal-value {
+            font-size: 36px;
+            font-weight: 700;
+            color: #3D3229;
+            line-height: 1;
+        }
+
+        .goal-target {
+            font-size: 13px;
+            color: #8B7E74;
+            margin-top: -4px;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            height: 8px;
+            background: #E2DDD5;
+            border-radius: 4px;
+            overflow: hidden;
+            margin: 8px 0;
+        }
+
+        .progress-bar-fill {
+            height: 100%;
+            background: linear-gradient(90deg, #A8C686, #7BA05B);
+            border-radius: 4px;
+            transition: width 0.6s ease;
+        }
+
+        .goal-status {
+            display: none;
+        }
+
+        .status-dot {
+            display: none;
+        }
+
+        .goal-insight {
+            font-size: 15px;
+            font-weight: 600;
+            line-height: 1.4;
+            margin: 4px 0;
+        }
+
+        .goal-insight.ahead {
+            color: #7BA05B;
+        }
+
+        .goal-insight.behind {
+            color: #D4A843;
+        }
+
+        .goal-pace-info {
+            display: none;
+        }
+
+        /* Balance Sheet Page */
+        .balance-summary {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin-bottom: 32px;
+        }
+
+        .summary-card {
+            background: #FFFFFF;
+            border: 1px solid #E2DDD5;
+            border-radius: 12px;
+            padding: 24px;
+            animation: slideUp 0.5s ease backwards;
+        }
+
+        .summary-card:nth-child(1) { animation-delay: 0.05s; }
+        .summary-card:nth-child(2) { animation-delay: 0.1s; }
+        .summary-card:nth-child(3) { animation-delay: 0.15s; }
+
+        .summary-card:hover {
+            background: #FFFFFF;
+            border-color: #7BA05B;
+            box-shadow: 0 2px 8px rgba(61, 50, 41, 0.08);
+        }
+
+        .summary-card-label {
+            font-size: 12px;
+            font-weight: 600;
+            color: #8B7E74;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 12px;
+        }
+
+        .summary-card-value {
+            font-size: 36px;
+            font-weight: 700;
+        }
+
+        .summary-card-value.assets {
+            color: #7BA05B;
+        }
+
+        .summary-card-value.liabilities {
+            color: #D4A843;
+        }
+
+        .summary-card-value.net {
+            color: #2C3E6B;
+        }
+
+        /* Charts */
+        .chart-section {
+            background: #FFFFFF;
+            border: 1px solid #E2DDD5;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 32px;
+            animation: slideUp 0.5s ease 0.3s backwards;
+        }
+
+        .chart-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 20px;
+            color: #3D3229;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 400px;
+            margin-bottom: 20px;
+        }
+
+        .goals-chart-container {
+            position: relative;
+            height: 350px;
+            margin-bottom: 20px;
+        }
+
+        .milestone-strip {
+            display: flex;
+            justify-content: center;
+            gap: 0;
+            margin-top: 8px;
+            padding: 16px 0 4px;
+        }
+
+        .milestone-card {
+            text-align: center;
+            padding: 12px 20px;
+            position: relative;
+        }
+
+        .milestone-card:not(:last-child)::after {
+            content: '→';
+            position: absolute;
+            right: -4px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #C4BDB4;
+            font-size: 16px;
+        }
+
+        .milestone-year {
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #8B7E74;
+            margin-bottom: 4px;
+        }
+
+        .milestone-value {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .milestone-value.positive {
+            color: #7BA05B;
+        }
+
+        .milestone-value.negative {
+            color: #C4755B;
+        }
+
+        .milestone-delta {
+            font-size: 11px;
+            margin-top: 2px;
+            font-weight: 500;
+        }
+
+        .milestone-delta.up {
+            color: #7BA05B;
+        }
+
+        .milestone-delta.down {
+            color: #C4755B;
+        }
+
+        .asset-categories {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+            margin-top: 20px;
+        }
+
+        .asset-category {
+            background: rgba(123, 160, 91, 0.04);
+            border-radius: 12px;
+            padding: 20px;
+            border: 1px solid rgba(123, 160, 91, 0.12);
+        }
+
+        .asset-category-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+            padding-bottom: 12px;
+            border-bottom: 1px solid rgba(123, 160, 91, 0.12);
+        }
+
+        .asset-category-title {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: #8B7E74;
+        }
+
+        .asset-category-total {
+            font-size: 18px;
+            font-weight: 700;
+        }
+
+        .asset-category-items {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .asset-cat-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 8px 10px;
+            border-radius: 6px;
+            border-left: 3px solid #7BA05B;
+            background: rgba(255, 255, 255, 0.5);
+        }
+
+        .asset-cat-item-label {
+            font-size: 13px;
+            color: #5C534A;
+        }
+
+        .asset-cat-item-value {
+            text-align: right;
+        }
+
+        .asset-cat-item-amount {
+            font-size: 14px;
+            font-weight: 600;
+            color: #3D3229;
+            display: block;
+        }
+
+        .asset-cat-item-percent {
+            font-size: 11px;
+            color: #8B7E74;
+        }
+
+        .breakdown-chart-container {
+            position: relative;
+            height: 280px;
+            width: 100%;
+            max-width: 400px;
+        }
+
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal.active {
+            display: flex;
+        }
+
+        .modal-content {
+            background: #EDE8DF;
+            border: 1px solid #E2DDD5;
+            border-radius: 12px;
+            padding: 32px;
+            max-width: 500px;
+            width: 90%;
+            animation: scaleIn 0.3s ease;
+        }
+
+        @keyframes scaleIn {
+            from {
+                opacity: 0;
+                transform: scale(0.95);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+
+        .modal-header {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 20px;
+            color: #3D3229;
+        }
+
+        .modal-section {
+            margin-bottom: 24px;
+        }
+
+        .modal-label {
+            font-size: 13px;
+            font-weight: 600;
+            color: #8B7E74;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 8px;
+            display: block;
+        }
+
+        .modal-input {
+            width: 100%;
+            padding: 12px;
+            background: #FFFFFF;
+            border: 1px solid #E2DDD5;
+            border-radius: 8px;
+            color: #3D3229;
+            font-family: 'Inter', sans-serif;
+            font-size: 14px;
+            transition: all 0.3s ease;
+        }
+
+        .modal-input:focus {
+            outline: none;
+            border-color: #7BA05B;
+            background: rgba(0, 212, 170, 0.05);
+        }
+
+        .modal-help {
+            font-size: 12px;
+            color: #8B7E74;
+            margin-top: 8px;
+            line-height: 1.5;
+        }
+
+        .toggle-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px;
+            background: rgba(123, 160, 91, 0.05);
+            border-radius: 8px;
+        }
+
+        .toggle {
+            position: relative;
+            width: 44px;
+            height: 24px;
+            background: #D9D4CC;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: background 0.3s ease;
+        }
+
+        .toggle.active {
+            background: #7BA05B;
+        }
+
+        .toggle-slider {
+            position: absolute;
+            top: 2px;
+            left: 2px;
+            width: 20px;
+            height: 20px;
+            background: white;
+            border-radius: 10px;
+            transition: left 0.3s ease;
+        }
+
+        .toggle.active .toggle-slider {
+            left: 22px;
+        }
+
+        .modal-actions {
+            display: flex;
+            gap: 12px;
+            margin-top: 28px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 12px 16px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+        }
+
+        .btn-primary {
+            background: #7BA05B;
+            color: #F4F1EB;
+        }
+
+        .btn-primary:hover {
+            background: #7BA05B;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0, 212, 170, 0.3);
+        }
+
+        .btn-secondary {
+            background: #FFFFFF;
+            color: #8B7E74;
+            border: 1px solid #E2DDD5;
+        }
+
+        .btn-secondary:hover {
+            background: #F4F1EB;
+            border-color: #8B7E74;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 20px;
+            color: #8B7E74;
+            font-size: 12px;
+            border-top: 1px solid #E2DDD5;
+            margin-top: 40px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .goals-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .balance-summary {
+                grid-template-columns: 1fr;
+            }
+
+            .asset-categories {
+                grid-template-columns: 1fr;
+            }
+
+            .chart-container,
+            .goals-chart-container {
+                height: 300px;
+            }
+
+            .logo {
+                font-size: 20px;
+            }
+
+            .goals-title {
+                font-size: 22px;
+            }
+
+            .summary-card-value {
+                font-size: 28px;
+            }
+
+            .goal-value {
+                font-size: 24px;
+            }
+
+            body {
+                padding: 12px;
+            }
+        }
+
+        /* Loading state */
+        .loading {
+            text-align: center;
+            padding: 40px 20px;
+            color: #8B7E74;
+        }
+
+        .spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(0, 212, 170, 0.2);
+            border-top-color: #7BA05B;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 16px;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Actions Section */
+        .actions-section {
+            background: #FFFFFF;
+            border: 1px solid #E2DDD5;
+            border-radius: 12px;
+            padding: 28px;
+            margin-bottom: 32px;
+            animation: slideUp 0.5s ease 0.35s backwards;
+        }
+
+        .actions-title {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 16px;
+            color: #3D3229;
+        }
+
+        .action-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 14px;
+            padding: 14px 16px;
+            margin-bottom: 8px;
+            border-radius: 8px;
+            background: #FAFAF7;
+            border-left: 4px solid;
+            font-size: 14px;
+            line-height: 1.6;
+            color: #3D3229;
+        }
+
+        .action-item.positive {
+            border-left-color: #7BA05B;
+        }
+
+        .action-item.warning {
+            border-left-color: #D4A843;
+        }
+
+        .action-item.info {
+            border-left-color: #8B7E74;
+        }
+
+        .action-item.summary {
+            background: #F4F1EB;
+            border-left-color: #3D3229;
+            font-weight: 600;
+        }
+
+        .action-dot {
+            display: none;
+        }
+
+        .action-highlight {
+            font-weight: 600;
+            color: #7BA05B;
+        }
+
+        .action-highlight.warning {
+            color: #D4A843;
+        }
+
+        /* Formula Section */
+        .formula-section {
+            background: #FFFFFF;
+            border: 1px solid #E2DDD5;
+            border-radius: 12px;
+            padding: 28px;
+            margin-top: 40px;
+            margin-bottom: 20px;
+        }
+
+        .formula-title {
+            font-size: 14px;
+            font-weight: 600;
+            color: #8B7E74;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            margin-bottom: 16px;
+        }
+
+        .formula-box {
+            background: #F4F1EB;
+            border-radius: 8px;
+            padding: 16px 20px;
+            font-size: 15px;
+            font-weight: 600;
+            color: #3D3229;
+            text-align: center;
+            margin-bottom: 20px;
+            font-family: 'Inter', monospace;
+        }
+
+        .formula-definitions {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            font-size: 13px;
+            color: #8B7E74;
+            line-height: 1.5;
+        }
+
+        .formula-definitions strong {
+            color: #3D3229;
+        }
+    </style>
+</head>
+<body>
+    <!-- Password Gate -->
+    <div id="passwordGate" style="
+        position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+        background: linear-gradient(135deg, #F4F1EB 0%, #E8E3D9 100%);
+        display: flex; align-items: center; justify-content: center;
+        z-index: 9999; font-family: 'Inter', sans-serif;
+    ">
+        <div style="text-align: center; max-width: 360px; padding: 40px;">
+            <div style="font-size: 48px; margin-bottom: 16px;">🏔</div>
+            <div style="font-size: 28px; font-weight: 700; color: #3D3229; margin-bottom: 6px;">Milepost</div>
+            <div style="font-size: 14px; color: #8B7E74; margin-bottom: 32px;">Enter password to continue</div>
+            <input id="passwordInput" type="password" placeholder="Password" style="
+                width: 100%; padding: 14px 18px; font-size: 15px; font-family: 'Inter', sans-serif;
+                border: 2px solid #E2DDD5; border-radius: 10px; background: #FFFFFF;
+                color: #3D3229; outline: none; text-align: center; letter-spacing: 1px;
+            " autofocus>
+            <div id="passwordError" style="
+                color: #C4755B; font-size: 13px; margin-top: 10px;
+                opacity: 0; transition: opacity 0.2s;
+            ">Incorrect password</div>
+            <button id="passwordSubmit" style="
+                margin-top: 16px; width: 100%; padding: 14px; font-size: 15px;
+                font-family: 'Inter', sans-serif; font-weight: 600;
+                background: #7BA05B; color: white; border: none; border-radius: 10px;
+                cursor: pointer; transition: all 0.2s;
+            ">Enter</button>
+        </div>
+    </div>
+    <script>
+        (function() {
+            const hash = 'b2dc6e2a';
+            function simpleHash(str) {
+                let h = 0;
+                for (let i = 0; i < str.length; i++) {
+                    h = ((h << 5) - h) + str.charCodeAt(i);
+                    h |= 0;
+                }
+                return (h >>> 0).toString(16);
+            }
+            function tryUnlock() {
+                const input = document.getElementById('passwordInput').value;
+                if (simpleHash(input) === hash) {
+                    document.getElementById('passwordGate').style.display = 'none';
+                    sessionStorage.setItem('milepost_auth', '1');
+                } else {
+                    const err = document.getElementById('passwordError');
+                    err.style.opacity = '1';
+                    document.getElementById('passwordInput').value = '';
+                    setTimeout(function() { err.style.opacity = '0'; }, 2000);
+                }
+            }
+            if (sessionStorage.getItem('milepost_auth') === '1') {
+                document.getElementById('passwordGate').style.display = 'none';
+            }
+            document.getElementById('passwordSubmit').addEventListener('click', tryUnlock);
+            document.getElementById('passwordInput').addEventListener('keydown', function(e) {
+                if (e.key === 'Enter') tryUnlock();
+            });
+        })();
+    </script>
+
+    <div class="container">
+        <!-- Header -->
+        <div class="header">
+            <div class="header-left">
+                <div class="logo">🏔 Milepost</div>
+            </div>
+            <div class="header-controls">
+                <div class="info-badge" id="dataBadge">Demo Data</div>
+                <button class="settings-btn" id="settingsBtn">
+                    <span>⚙️</span> Settings
+                </button>
+            </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tab-bar">
+            <button class="tab-btn active" data-tab="goals">Goals Dashboard</button>
+            <button class="tab-btn" data-tab="balance">The Trail</button>
+        </div>
+
+        <!-- Goals Tab -->
+        <div id="goals" class="tab-content active">
+            <div class="goals-header">
+                <div class="goals-title">2026 Goals Dashboard</div>
+                <div class="goals-subtitle" id="monthIndicator">Tracking progress through February 2026</div>
+            </div>
+
+            <div class="goals-grid" id="goalsGrid">
+                <!-- Goals cards will be rendered here -->
+            </div>
+
+            <div id="actionsSection">
+                <!-- Recommended actions will be rendered here -->
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Monthly Progress</div>
+                <div class="goals-chart-container">
+                    <canvas id="goalsProgressChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Balance Sheet Tab -->
+        <div id="balance" class="tab-content">
+            <div class="balance-summary" id="balanceSummary">
+                <!-- Summary cards will be rendered here -->
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Net Position Over Time</div>
+                <div class="chart-container">
+                    <canvas id="netPositionChart"></canvas>
+                </div>
+                <div id="milestoneStrip" class="milestone-strip">
+                    <!-- Year-end milestones rendered here -->
+                </div>
+            </div>
+
+            <div class="chart-section">
+                <div class="chart-title">Asset Breakdown</div>
+                <div id="assetBreakdownContainer">
+                    <!-- Categorized breakdown will be rendered here -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div id="settingsModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">Settings</div>
+
+            <div class="modal-section">
+                <label class="modal-label">Google Sheet CSV URL</label>
+                <input type="text" id="csvUrlInput" class="modal-input" placeholder="Paste your published CSV URL here">
+                <div class="modal-help">
+                    Publish your Google Sheet as CSV: File → Share → Publish to Web → Select "Monthly Data" tab → Choose "CSV" format → Copy link and paste above.
+                </div>
+            </div>
+
+            <div class="modal-section">
+                <label class="modal-label">Demo Mode</label>
+                <div class="toggle-container">
+                    <div class="toggle active" id="demoToggle">
+                        <div class="toggle-slider"></div>
+                    </div>
+                    <span style="color: #8B7E74; font-size: 14px;">Use sample data for visualization</span>
+                </div>
+            </div>
+
+            <div class="modal-actions">
+                <button class="btn btn-secondary" id="cancelBtn">Cancel</button>
+                <button class="btn btn-primary" id="saveBtn">Save Settings</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Footer -->
+    <div class="footer">
+        Milepost • Data from Google Sheets
+    </div>
+
+    <script>
+        // ============================================
+        // CONFIGURATION
+        // ============================================
+        const CONFIG = {
+            GOOGLE_SHEET_CSV_URL: '',
+            DEMO_MODE: true,
+        };
+
+        // ============================================
+        // STATE & CHARTS
+        // ============================================
+        let chartsInstances = {
+            goalsProgress: null,
+            netPosition: null,
+            assetBreakdown: null,
+        };
+
+        let currentData = null;
+        let goalsData = null;
+
+        // ============================================
+        // DEMO DATA GENERATION
+        // ============================================
+        function generateDemoData() {
+            // Real Vanguard Retirement data (monthly values indexed from Jan 2022)
+            const vanguardRetirementData = [
+                11513.84, 11219.92, 11584.02, 10539.58, 10511.35, 9632.63, 10537.43, 10143.81, 9203.08, 9954.63,
+                10475.34, 9860.40, 10540.36, 10294.64, 17302.70, 17483.75, 17556.89, 18757.47, 19426.72, 19051.06,
+                20617.38, 27943.81, 35703.59, 45207.87, 46112.77, 49420.53, 51824.21, 51018.30, 56683.55, 65456.53,
+                67721.58, 71686.52, 75666.42, 77482.82, 86370.10, 85769.66, 91351.02, 92927.80, 104765.27, 108641.77,
+                123384.17, 137978.27, 141126.35, 144347.74, 149349.70, 163725.26, 164197.16, 164092.70,
+                166686.75, 166840.53 // Jan-Feb 2026
+            ];
+
+            // Real Dry Powder data (monthly ending balances from May 2023 onward)
+            const dryPowderData = [
+                0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, // Jan-Dec 2022: no account
+                0, 0, 0, 0, // Jan-Apr 2023: no account
+                284.49, 2286.03, 22318.22, 22407.48, 21373.18, 17201.44, 17268.00, 11370.28, // May-Dec 2023
+                12719.00, 15768.70, 15682.62, 16063.61, 17912.26, 15989.86, 20565.85, 22773.81, // Jan-Aug 2024
+                24755.99, 19338.07, 23410.24, 20100.15, // Sep-Dec 2024
+                20215.11, 22776.03, 22503.85, 21997.46, 22065.74, 37138.02, 87129.69, 42639.52, // Jan-Aug 2025
+                33774.65, 28590.13, 13632.00, 48686.93, // Sep-Dec 2025
+                40131.90, 39825.42 // Jan-Feb 2026
+            ];
+
+            const months = [];
+            const startDate = new Date(2022, 0, 1);
+
+            for (let i = 0; i < 50; i++) {
+                const date = new Date(startDate);
+                date.setMonth(date.getMonth() + i);
+                const monthStr = date.toLocaleString('en-US', { month: 'short', year: '2-digit' });
+                const monthNum = i;
+
+                // Gradually increasing income
+                const baseIncome = 5500;
+                const incomeGrowth = 2000 * (monthNum / 49);
+                const takeHomePay = baseIncome + incomeGrowth + (Math.random() - 0.5) * 300;
+
+                // 401k and HSA contributions
+                const pre401k = monthNum > 12 ? 600 + (monthNum - 12) * 10 : 300;
+                const preHSA = monthNum > 16 ? 350 : 0;
+
+                // Income and expenses
+                const trueIncome = takeHomePay + pre401k + preHSA;
+                const baseExpenses = 3500;
+                const expenseVariance = Math.sin(monthNum * 0.3) * 400;
+                const totalExpenses = baseExpenses + expenseVariance + (Math.random() - 0.5) * 200;
+
+                const amountSaved = trueIncome - totalExpenses;
+                const savingsRate = (amountSaved / trueIncome) * 100;
+
+                // Real data for dry powder and vanguard
+                const dryPowder = dryPowderData[monthNum] || 0;
+                // Real HSA data
+                const hsaCurrentData = { 44: 1000, 45: 2210, 46: 3220, 47: 4240, 48: 5510, 49: 5962.58 }; // Sep 2025-Feb 2026
+                const hsaCurrent = hsaCurrentData[monthNum] || 0;
+                const hsaOld = 15283; // Static balance
+                const retirement401k = 0; // User confirmed zero
+                const vanguardRetirement = vanguardRetirementData[monthNum] || 0;
+
+                // 22Fund: $12,500 static since March 2022 (month index 2)
+                const fund22 = monthNum >= 2 ? 12500 : 0;
+
+                // Search Fund: $0 until Nov 2025 (month 46), then $15,000
+                const searchFund = monthNum >= 46 ? 15000 : 0;
+
+                // Bitcoin: real data from Aug 2025 onward, $0 before
+                const bitcoinData = { 43: 2500, 44: 2500, 45: 2300, 46: 1950, 47: 3918, 48: 4334, 49: 3760 };
+                const bitcoin = bitcoinData[monthNum] || 0;
+
+                const totalAssets = dryPowder + hsaCurrent + hsaOld + retirement401k + vanguardRetirement + fund22 + searchFund + bitcoin;
+
+                // Real student loan data — fill forward from known balances
+                const loanSchedule = [
+                    { month: 0, balance: 250371 },   // Jan 2022
+                    { month: 12, balance: 250371 },  // Jan 2023
+                    { month: 14, balance: 225054 },  // Mar 2023
+                    { month: 29, balance: 216144 },  // Jun 2024
+                    { month: 43, balance: 180330 },  // Aug 2025
+                    { month: 44, balance: 178165 },  // Sep 2025
+                    { month: 48, balance: 167708 },  // Jan 2026
+                ];
+                let studentLoans = 250371;
+                for (const entry of loanSchedule) {
+                    if (monthNum >= entry.month) studentLoans = entry.balance;
+                }
+
+                const totalLiabilities = studentLoans;
+                const netPosition = totalAssets - totalLiabilities;
+
+                months.push({
+                    month: monthStr,
+                    monthNum: monthNum,
+                    takeHomePay: Math.round(takeHomePay),
+                    pre401k: Math.round(pre401k),
+                    preHSA: Math.round(preHSA),
+                    trueIncome: Math.round(trueIncome),
+                    totalExpenses: Math.round(totalExpenses),
+                    amountSaved: Math.round(amountSaved),
+                    savingsRate: Math.round(savingsRate * 10) / 10,
+                    dryPowder: Math.round(dryPowder),
+                    hsaCurrent: Math.round(hsaCurrent),
+                    hsaOld: Math.round(hsaOld),
+                    retirement401k: Math.round(retirement401k),
+                    vanguardRetirement: Math.round(vanguardRetirement),
+                    fund22: Math.round(fund22),
+                    searchFund: Math.round(searchFund),
+                    bitcoin: Math.round(bitcoin),
+                    totalAssets: Math.round(totalAssets),
+                    studentLoans: Math.round(studentLoans),
+                    totalLiabilities: Math.round(totalLiabilities),
+                    netPosition: Math.round(netPosition),
+                });
+            }
+
+            return months;
+        }
+
+        function generateDemoGoals() {
+            // YTD data for 2026
+            return {
+                savingsRate: {
+                    current: 18.5,
+                    target: 22,
+                    unit: '%',
+                    months: [15.2, 16.8, 18.5]
+                },
+                hsaContribution: {
+                    current: 1050,
+                    target: 4150,
+                    unit: '$',
+                    months: [350, 700, 1050]
+                },
+                retirement401k: {
+                    current: 1800,
+                    target: 7200,
+                    unit: '$',
+                    months: [600, 1200, 1800]
+                },
+                studentLoanPaydown: {
+                    current: 10457,
+                    target: 10000,
+                    unit: '$',
+                    months: [10457]
+                },
+                dryPowder: {
+                    current: 39825,
+                    target: 35000,
+                    unit: '$',
+                    months: [40132, 39825]
+                }
+            };
+        }
+
+        // ============================================
+        // FORMATTING HELPERS
+        // ============================================
+        function formatCurrency(value) {
+            return new Intl.NumberFormat('en-US', {
+                style: 'currency',
+                currency: 'USD',
+                minimumFractionDigits: 0,
+                maximumFractionDigits: 0,
+            }).format(value);
+        }
+
+        function formatPercent(value) {
+            return `${Math.round(value * 10) / 10}%`;
+        }
+
+        // ============================================
+        // GOALS PAGE RENDERING
+        // ============================================
+        function renderGoalsPage() {
+            const goalsGrid = document.getElementById('goalsGrid');
+            const goals = goalsData;
+
+            const goalDefs = [
+                {
+                    key: 'savingsRate',
+                    title: 'Savings Rate',
+                    isPercent: true,
+                    color: '#7BA05B',
+                },
+                {
+                    key: 'hsaContribution',
+                    title: 'HSA Contributions',
+                    isPercent: false,
+                    color: '#7BA05B',
+                },
+                {
+                    key: 'retirement401k',
+                    title: '401k Contributions',
+                    isPercent: false,
+                    color: '#7BA05B',
+                },
+                {
+                    key: 'studentLoanPaydown',
+                    title: 'Student Loan Paydown',
+                    isPercent: false,
+                    color: '#7BA05B',
+                },
+                {
+                    key: 'dryPowder',
+                    title: 'Dry Powder',
+                    isPercent: false,
+                    color: '#7BA05B',
+                },
+            ];
+
+            const currentMonth = new Date().getMonth() + 1;
+            const monthName = new Date().toLocaleString('en-US', { month: 'long' });
+
+            goalsGrid.innerHTML = goalDefs.map(goalDef => {
+                const goal = goals[goalDef.key];
+                let progress, ahead, insightText, insightClass, barColor;
+                const remainingMonths = 12 - currentMonth;
+
+                if (goalDef.key === 'savingsRate') {
+                    ahead = goal.current - goal.target;
+                    progress = (goal.current / goal.target) * 100;
+                    insightClass = ahead >= 0 ? 'ahead' : 'behind';
+                    barColor = ahead >= 0 ? 'linear-gradient(90deg, #A8C686, #7BA05B)' : 'linear-gradient(90deg, #E8C96A, #D4A843)';
+                    if (ahead >= 0) {
+                        insightText = `On track — averaging ${formatPercent(goal.current)}, ${formatPercent(Math.abs(ahead))} above your ${formatPercent(goal.target)} annual target`;
+                    } else {
+                        insightText = `Behind — need to save ${formatPercent(Math.abs(ahead))} more of income each month to hit ${formatPercent(goal.target)} by December`;
+                    }
+                } else if (goalDef.key === 'dryPowder') {
+                    // Dry powder is a level target, not cumulative
+                    ahead = goal.current - goal.target;
+                    progress = (goal.current / goal.target) * 100;
+                    insightClass = ahead >= 0 ? 'ahead' : 'behind';
+                    barColor = ahead >= 0 ? 'linear-gradient(90deg, #A8C686, #7BA05B)' : 'linear-gradient(90deg, #E8C96A, #D4A843)';
+                    if (ahead >= 0) {
+                        insightText = `On track — ${formatCurrency(Math.abs(ahead))} above your ${formatCurrency(goal.target)} target`;
+                    } else {
+                        const perMonth = Math.abs(ahead) / remainingMonths;
+                        insightText = `Behind — save ${formatCurrency(perMonth)}/mo more to reach ${formatCurrency(goal.target)} by December`;
+                    }
+                } else {
+                    // Cumulative goals: HSA, 401k, student loan
+                    const pace = goal.target * (currentMonth / 12);
+                    ahead = goal.current - pace;
+                    progress = (goal.current / goal.target) * 100;
+                    insightClass = ahead >= 0 ? 'ahead' : 'behind';
+                    barColor = ahead >= 0 ? 'linear-gradient(90deg, #A8C686, #7BA05B)' : 'linear-gradient(90deg, #E8C96A, #D4A843)';
+                    const monthlyRemaining = (goal.target - goal.current) / remainingMonths;
+                    if (ahead >= 0) {
+                        insightText = `On track — ${formatCurrency(Math.abs(ahead))} ahead. Need ${formatCurrency(monthlyRemaining)}/mo to hit ${formatCurrency(goal.target)} by December`;
+                    } else {
+                        insightText = `Behind — need ${formatCurrency(monthlyRemaining)}/mo for the remaining ${remainingMonths} months to hit ${formatCurrency(goal.target)} by December`;
+                    }
+                }
+
+                const valueStr = goalDef.isPercent
+                    ? formatPercent(goal.current)
+                    : formatCurrency(goal.current);
+
+                const targetStr = goalDef.isPercent
+                    ? `of ${formatPercent(goal.target)} annual target`
+                    : `of ${formatCurrency(goal.target)} annual target`;
+
+                return `
+                    <div class="goal-card">
+                        <div class="goal-card-title">${goalDef.title}</div>
+                        <div class="goal-card-content">
+                            <div class="goal-value">${valueStr}</div>
+                            <div class="goal-target">${targetStr}</div>
+
+                            <div class="progress-bar-container">
+                                <div class="progress-bar-fill" style="width: ${Math.min(100, progress)}%; background: ${barColor}"></div>
+                            </div>
+
+                            <div class="goal-insight ${insightClass}">${insightText}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            renderRecommendedActions();
+            renderGoalsProgressChart();
+        }
+
+        function renderGoalsProgressChart() {
+            const goals = goalsData;
+            const ctx = document.getElementById('goalsProgressChart').getContext('2d');
+
+            // Prepare datasets
+            const months = ['Jan', 'Feb', 'Mar'];
+
+            const datasets = [
+                {
+                    label: 'Savings Rate',
+                    data: goals.savingsRate.months.map((m, i) => (m / goals.savingsRate.target) * 100),
+                    borderColor: '#7BA05B',
+                    backgroundColor: 'rgba(0, 212, 170, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'HSA Contributions',
+                    data: goals.hsaContribution.months.map((m, i) => (m / goals.hsaContribution.target) * 100),
+                    borderColor: '#D4A843',
+                    backgroundColor: 'rgba(255, 217, 61, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y',
+                },
+                {
+                    label: '401k Contributions',
+                    data: goals.retirement401k.months.map((m, i) => (m / goals.retirement401k.target) * 100),
+                    borderColor: '#C4755B',
+                    backgroundColor: 'rgba(255, 107, 107, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y',
+                },
+                {
+                    label: 'Student Loan Paydown',
+                    data: goals.studentLoanPaydown.months.map((m, i) => (m / goals.studentLoanPaydown.target) * 100),
+                    borderColor: '#A8C686',
+                    backgroundColor: 'rgba(108, 99, 255, 0.1)',
+                    borderWidth: 2,
+                    tension: 0.4,
+                    fill: true,
+                    yAxisID: 'y',
+                },
+            ];
+
+            if (chartsInstances.goalsProgress) {
+                chartsInstances.goalsProgress.destroy();
+            }
+
+            chartsInstances.goalsProgress = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: months,
+                    datasets: datasets,
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#8B7E74',
+                                font: { size: 12, weight: '500', family: "'Inter'" },
+                                padding: 12,
+                                usePointStyle: true,
+                            },
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#8B7E74',
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1,
+                            padding: 12,
+                            titleFont: { size: 13, weight: '600' },
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                label: (context) => {
+                                    const value = context.parsed.y;
+                                    return `${context.dataset.label}: ${Math.round(value)}% of target`;
+                                }
+                            }
+                        },
+                    },
+                    scales: {
+                        y: {
+                            ticks: { color: '#8B7E74', font: { size: 12 } },
+                            grid: { color: 'rgba(61, 50, 41, 0.08)' },
+                            max: 100,
+                            beginAtZero: true,
+                        },
+                        x: {
+                            ticks: { color: '#8B7E74', font: { size: 12 } },
+                            grid: { color: 'rgba(255, 255, 255, 0.05)', drawBorder: false },
+                        },
+                    },
+                },
+            });
+        }
+
+        function renderRecommendedActions() {
+            const goals = goalsData;
+            const currentMonth = new Date().getMonth() + 1;
+            const monthName = new Date().toLocaleString('en-US', { month: 'long' });
+            const remainingMonths = 12 - currentMonth;
+            const actionsContainer = document.getElementById('actionsSection');
+
+            // Calculate where each goal stands vs pace
+            const goalStatus = [
+                {
+                    name: 'HSA',
+                    current: goals.hsaContribution.current,
+                    target: goals.hsaContribution.target,
+                    pace: goals.hsaContribution.target * (currentMonth / 12),
+                    type: 'cumulative',
+                    currentMonthly: goals.hsaContribution.current / currentMonth,
+                },
+                {
+                    name: '401k',
+                    current: goals.retirement401k.current,
+                    target: goals.retirement401k.target,
+                    pace: goals.retirement401k.target * (currentMonth / 12),
+                    type: 'cumulative',
+                    currentMonthly: goals.retirement401k.current / currentMonth,
+                },
+                {
+                    name: 'Student Loan Paydown',
+                    current: goals.studentLoanPaydown.current,
+                    target: goals.studentLoanPaydown.target,
+                    pace: goals.studentLoanPaydown.target * (currentMonth / 12),
+                    type: 'cumulative',
+                    currentMonthly: goals.studentLoanPaydown.current / currentMonth,
+                },
+                {
+                    name: 'Dry Powder',
+                    current: goals.dryPowder.current,
+                    target: goals.dryPowder.target,
+                    pace: goals.dryPowder.target,
+                    type: 'level',
+                },
+                {
+                    name: 'Savings Rate',
+                    current: goals.savingsRate.current,
+                    target: goals.savingsRate.target,
+                    pace: goals.savingsRate.target,
+                    type: 'rate',
+                },
+            ];
+
+            goalStatus.forEach(g => {
+                g.ahead = g.current - g.pace;
+                g.onTrack = g.ahead >= 0;
+                g.needPerMonth = g.type === 'cumulative'
+                    ? (g.target - g.current) / remainingMonths
+                    : 0;
+            });
+
+            const onTrack = goalStatus.filter(g => g.onTrack);
+            const behind = goalStatus.filter(g => !g.onTrack);
+            const aheadCumulative = goalStatus.filter(g => g.onTrack && g.type === 'cumulative' && g.ahead > 100);
+            const behindCumulative = goalStatus.filter(g => !g.onTrack && g.type === 'cumulative');
+
+            const actions = [];
+
+            // ---- HEADER: Overall status ----
+            if (behind.length === 0) {
+                actions.push({
+                    type: 'positive', isHeader: true,
+                    text: `All 5 goals are on track through ${monthName}. Keep doing what you're doing.`
+                });
+            } else {
+                actions.push({
+                    type: 'info', isHeader: true,
+                    text: `${onTrack.length} of 5 goals on track. ${behind.length} need${behind.length === 1 ? 's' : ''} attention before December.`
+                });
+            }
+
+            // ---- WHAT'S WORKING ----
+            onTrack.forEach(g => {
+                if (g.type === 'cumulative') {
+                    actions.push({
+                        type: 'positive',
+                        text: `${g.name}: ${formatCurrency(Math.abs(g.ahead))} ahead. Keep contributing ${formatCurrency(g.needPerMonth)}/mo to finish the year at ${formatCurrency(g.target)}.`
+                    });
+                } else if (g.type === 'level') {
+                    actions.push({
+                        type: 'positive',
+                        text: `${g.name}: ${formatCurrency(g.current)} — already above your ${formatCurrency(g.target)} target. No action needed.`
+                    });
+                } else {
+                    actions.push({
+                        type: 'positive',
+                        text: `Savings Rate: Averaging ${formatPercent(g.current)}, above your ${formatPercent(g.target)} target. Keep it up.`
+                    });
+                }
+            });
+
+            // ---- WHAT NEEDS ATTENTION ----
+            behind.forEach(g => {
+                if (g.type === 'cumulative') {
+                    actions.push({
+                        type: 'warning',
+                        text: `${g.name}: ${formatCurrency(Math.abs(g.ahead))} behind. Increase to ${formatCurrency(g.needPerMonth)}/mo (from ~${formatCurrency(g.currentMonthly)}/mo) to still hit ${formatCurrency(g.target)} by December.`
+                    });
+                } else if (g.type === 'level') {
+                    const gap = Math.abs(g.ahead);
+                    const perMonth = gap / remainingMonths;
+                    actions.push({
+                        type: 'warning',
+                        text: `${g.name}: ${formatCurrency(gap)} short of your ${formatCurrency(g.target)} target. Set aside ${formatCurrency(perMonth)}/mo to close the gap by December.`
+                    });
+                } else {
+                    const gap = Math.abs(g.ahead);
+                    actions.push({
+                        type: 'warning',
+                        text: `Savings Rate: ${formatPercent(gap)} below your ${formatPercent(g.target)} target. Reduce spending or increase income to close the gap.`
+                    });
+                }
+            });
+
+            // ---- REBALANCING ----
+            if (aheadCumulative.length > 0 && behindCumulative.length > 0) {
+                const biggest = aheadCumulative.sort((a, b) => b.ahead - a.ahead)[0];
+                const neediest = behindCumulative.sort((a, b) => a.ahead - b.ahead)[0];
+                const redirectPerMonth = Math.min(
+                    Math.round(biggest.ahead / remainingMonths),
+                    Math.round(Math.abs(neediest.ahead) / remainingMonths)
+                );
+                if (redirectPerMonth > 25) {
+                    actions.push({
+                        type: 'info',
+                        text: `Rebalance: You can slow ${biggest.name} by ${formatCurrency(redirectPerMonth)}/mo and redirect it to ${neediest.name}. You'd still hit both targets by December.`
+                    });
+                }
+            }
+
+            // ---- MONTHLY ALLOCATION PLAN ----
+            const totalMonthlyNeeded = goalStatus
+                .filter(g => g.type === 'cumulative')
+                .reduce((sum, g) => sum + Math.max(0, g.needPerMonth), 0);
+
+            const dryPowderMonthly = goalStatus.find(g => g.name === 'Dry Powder');
+            const dryPowderGap = dryPowderMonthly && !dryPowderMonthly.onTrack
+                ? Math.abs(dryPowderMonthly.ahead) / remainingMonths : 0;
+
+            const planItems = goalStatus
+                .filter(g => g.type === 'cumulative')
+                .map(g => `${g.name}: ${formatCurrency(g.needPerMonth)}/mo`)
+                .join(' · ');
+
+            const totalSavingsNeeded = totalMonthlyNeeded + dryPowderGap;
+
+            actions.push({
+                type: 'summary', isHeader: false,
+                text: `Monthly plan to hit every goal: ${planItems}${dryPowderGap > 0 ? ` · Dry Powder: ${formatCurrency(dryPowderGap)}/mo` : ''}. That's ${formatCurrency(totalSavingsNeeded)}/mo total across all goals for the remaining ${remainingMonths} months.`
+            });
+
+            // Render
+            const actionsHTML = `
+                <div class="actions-section">
+                    <div class="actions-title">Recommended Actions</div>
+                    ${actions.map(action => `
+                        <div class="action-item ${action.type}${action.isHeader ? ' summary' : ''}">
+                            <div>${action.text}</div>
+                        </div>
+                    `).join('')}
+                </div>
+                `;
+                actionsContainer.innerHTML = actionsHTML;
+        }
+
+        // ============================================
+        // BALANCE SHEET PAGE RENDERING
+        // ============================================
+        function renderBalanceSheetPage() {
+            const lastMonth = currentData[currentData.length - 1];
+
+            // Summary cards
+            const summaryHtml = `
+                <div class="summary-card">
+                    <div class="summary-card-label">Total Assets</div>
+                    <div class="summary-card-value assets">${formatCurrency(lastMonth.totalAssets)}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-label">Total Liabilities</div>
+                    <div class="summary-card-value liabilities">${formatCurrency(lastMonth.totalLiabilities)}</div>
+                </div>
+                <div class="summary-card">
+                    <div class="summary-card-label">Net Position</div>
+                    <div class="summary-card-value net">${formatCurrency(lastMonth.netPosition)}</div>
+                </div>
+            `;
+
+            document.getElementById('balanceSummary').innerHTML = summaryHtml;
+
+            renderNetPositionChart();
+            renderAssetBreakdown();
+        }
+
+        function renderNetPositionChart() {
+            const ctx = document.getElementById('netPositionChart').getContext('2d');
+
+            // Create stacked bar data
+            const labels = currentData.map(m => m.month);
+            const assets = currentData.map(m => m.totalAssets);
+            const liabilities = currentData.map(m => -m.totalLiabilities);
+            const netPosition = currentData.map(m => m.netPosition);
+
+            // Find year-end milestones (Dec of each year + latest month)
+            const milestones = [];
+            for (let i = 0; i < currentData.length; i++) {
+                const m = currentData[i];
+                if (m.month.startsWith('Dec')) {
+                    const yr = m.month.replace(/\D/g, '').trim();
+                    milestones.push({ index: i, label: m.month, netPosition: m.netPosition, year: yr });
+                }
+            }
+            // Add latest month if it's not December
+            const lastMonth = currentData[currentData.length - 1];
+            if (!lastMonth.month.startsWith('Dec')) {
+                milestones.push({ index: currentData.length - 1, label: lastMonth.month, netPosition: lastMonth.netPosition, year: 'Now' });
+            }
+
+            // Build annotation lines for year-ends
+            const annotations = {};
+            milestones.forEach((ms, idx) => {
+                annotations['line' + idx] = {
+                    type: 'line',
+                    xMin: ms.index,
+                    xMax: ms.index,
+                    borderColor: 'rgba(44, 62, 107, 0.25)',
+                    borderWidth: 1.5,
+                    borderDash: [4, 4],
+                };
+                annotations['dot' + idx] = {
+                    type: 'point',
+                    xValue: ms.index,
+                    yValue: ms.netPosition,
+                    backgroundColor: '#2C3E6B',
+                    borderColor: '#FFFFFF',
+                    borderWidth: 2,
+                    radius: 5,
+                };
+            });
+
+            if (chartsInstances.netPosition) {
+                chartsInstances.netPosition.destroy();
+            }
+
+            chartsInstances.netPosition = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: labels,
+                    datasets: [
+                        {
+                            label: 'Assets',
+                            data: assets,
+                            backgroundColor: 'rgba(123, 160, 91, 0.6)',
+                            borderColor: '#7BA05B',
+                            borderWidth: 0,
+                            yAxisID: 'y',
+                            stack: 'position',
+                            order: 2,
+                        },
+                        {
+                            label: 'Liabilities',
+                            data: liabilities,
+                            backgroundColor: 'rgba(212, 168, 67, 0.6)',
+                            borderColor: '#D4A843',
+                            borderWidth: 0,
+                            yAxisID: 'y',
+                            stack: 'position',
+                            order: 2,
+                        },
+                        {
+                            label: 'Net Position',
+                            data: netPosition,
+                            borderColor: '#2C3E6B',
+                            backgroundColor: 'transparent',
+                            borderWidth: 3,
+                            order: 1,
+                            type: 'line',
+                            tension: 0.4,
+                            fill: false,
+                            pointRadius: 0,
+                            pointHoverRadius: 6,
+                            pointBackgroundColor: '#2C3E6B',
+                            pointBorderColor: '#FFFFFF',
+                            pointBorderWidth: 2,
+                            yAxisID: 'y',
+                        },
+                    ],
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#8B7E74',
+                                font: { size: 12, weight: '500', family: "'Inter'" },
+                                padding: 12,
+                                usePointStyle: true,
+                            },
+                            position: 'bottom',
+                        },
+                        tooltip: {
+                            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+                            titleColor: '#fff',
+                            bodyColor: '#8B7E74',
+                            borderColor: 'rgba(255, 255, 255, 0.2)',
+                            borderWidth: 1,
+                            padding: 12,
+                            titleFont: { size: 13, weight: '600' },
+                            bodyFont: { size: 12 },
+                            callbacks: {
+                                label: (context) => {
+                                    if (context.dataset.label === 'Liabilities') {
+                                        return `${context.dataset.label}: ${formatCurrency(-context.parsed.y)}`;
+                                    }
+                                    return `${context.dataset.label}: ${formatCurrency(context.parsed.y)}`;
+                                }
+                            }
+                        },
+                        annotation: {
+                            annotations: annotations
+                        },
+                    },
+                    scales: {
+                        y: {
+                            ticks: {
+                                color: '#8B7E74',
+                                font: { size: 12 },
+                                callback: (value) => formatCurrency(value),
+                            },
+                            grid: { color: 'rgba(61, 50, 41, 0.08)' },
+                            stacked: true,
+                        },
+                        x: {
+                            ticks: { color: '#8B7E74', font: { size: 11 } },
+                            grid: { color: 'rgba(61, 50, 41, 0.04)', drawBorder: false },
+                            stacked: true,
+                        },
+                    },
+                },
+            });
+
+            // Render milestone strip below the chart
+            const strip = document.getElementById('milestoneStrip');
+            strip.innerHTML = milestones.map((ms, idx) => {
+                const isPositive = ms.netPosition >= 0;
+                const valueClass = isPositive ? 'positive' : 'negative';
+                let deltaHTML = '';
+                if (idx > 0) {
+                    const prev = milestones[idx - 1].netPosition;
+                    const delta = ms.netPosition - prev;
+                    const deltaSign = delta >= 0 ? '+' : '';
+                    const deltaClass = delta >= 0 ? 'up' : 'down';
+                    const monthsBetween = ms.index - milestones[idx - 1].index;
+                    const perMonth = monthsBetween > 0 ? delta / monthsBetween : 0;
+                    const perMonthSign = perMonth >= 0 ? '+' : '';
+                    deltaHTML = `<div class="milestone-delta ${deltaClass}">${deltaSign}${formatCurrency(delta)}</div>`;
+                    deltaHTML += `<div class="milestone-delta ${deltaClass}" style="opacity: 0.7;">${perMonthSign}${formatCurrency(perMonth)}/mo</div>`;
+                }
+                return `
+                    <div class="milestone-card">
+                        <div class="milestone-year">${ms.year === 'Now' ? 'Feb \'26' : 'Dec \'' + ms.year}</div>
+                        <div class="milestone-value ${valueClass}">${formatCurrency(ms.netPosition)}</div>
+                        ${deltaHTML}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function renderAssetBreakdown() {
+            const lastMonth = currentData[currentData.length - 1];
+            const totalAssets = lastMonth.totalAssets;
+
+            // Define the three category buckets
+            const categories = [
+                {
+                    title: 'Liquid',
+                    color: '#7BA05B',
+                    items: [
+                        { name: 'Dry Powder', value: lastMonth.dryPowder, color: '#A8C686' },
+                    ]
+                },
+                {
+                    title: 'Big Swings',
+                    color: '#D4A843',
+                    items: [
+                        { name: 'Search Fund', value: lastMonth.searchFund, color: '#D4A843' },
+                        { name: 'Bitcoin', value: lastMonth.bitcoin, color: '#E8A83E' },
+                        { name: '22Fund', value: lastMonth.fund22, color: '#C4755B' },
+                    ]
+                },
+                {
+                    title: 'Retirement',
+                    color: '#7BA05B',
+                    items: [
+                        { name: 'Vanguard Retirement', value: lastMonth.vanguardRetirement, color: '#7BA05B' },
+                        { name: 'HSA (Old)', value: lastMonth.hsaOld, color: '#9BB5A0' },
+                        { name: 'HSA (Current)', value: lastMonth.hsaCurrent, color: '#B8D4A0' },
+                        { name: '401k', value: lastMonth.retirement401k, color: '#8B7355' },
+                    ]
+                }
+            ];
+
+            // Compute category totals
+            categories.forEach(cat => {
+                cat.total = cat.items.reduce((sum, item) => sum + item.value, 0);
+            });
+
+            // Total assets banner
+            const container = document.getElementById('assetBreakdownContainer');
+            let html = `
+                <div style="text-align: center; margin-bottom: 24px;">
+                    <div style="font-size: 12px; font-weight: 600; color: #8B7E74; text-transform: uppercase; letter-spacing: 0.5px;">Total Assets</div>
+                    <div style="font-size: 36px; font-weight: 700; color: #7BA05B;">${formatCurrency(totalAssets)}</div>
+                </div>
+            `;
+
+            // Build category cards in a 2-column grid
+            // Left column: Liquid + Big Swings stacked, Right column: Retirement
+            html += '<div class="asset-categories">';
+
+            // Left column
+            html += '<div style="display: flex; flex-direction: column; gap: 24px;">';
+            [categories[0], categories[1]].forEach(cat => {
+                html += renderCategoryCard(cat, totalAssets);
+            });
+            html += '</div>';
+
+            // Right column
+            html += '<div>';
+            html += renderCategoryCard(categories[2], totalAssets);
+            html += '</div>';
+
+            html += '</div>';
+            container.innerHTML = html;
+        }
+
+        function renderCategoryCard(cat, totalAssets) {
+            const catPercent = ((cat.total / totalAssets) * 100).toFixed(1);
+            let html = `<div class="asset-category">`;
+            html += `<div class="asset-category-header">
+                <div>
+                    <div class="asset-category-title">${cat.title}</div>
+                    <div style="font-size: 11px; color: #A89F96; margin-top: 2px;">${catPercent}% of total</div>
+                </div>
+                <div class="asset-category-total" style="color: ${cat.color};">${formatCurrency(cat.total)}</div>
+            </div>`;
+            html += '<div class="asset-category-items">';
+            cat.items.filter(a => a.value > 0).forEach(item => {
+                const pct = ((item.value / totalAssets) * 100).toFixed(1);
+                html += `
+                    <div class="asset-cat-item" style="border-left-color: ${item.color};">
+                        <div class="asset-cat-item-label">${item.name}</div>
+                        <div class="asset-cat-item-value">
+                            <span class="asset-cat-item-amount">${formatCurrency(item.value)}</span>
+                            <span class="asset-cat-item-percent">${pct}%</span>
+                        </div>
+                    </div>
+                `;
+            });
+            html += '</div></div>';
+            return html;
+        }
+
+        // ============================================
+        // TAB NAVIGATION
+        // ============================================
+        document.querySelectorAll('.tab-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabName = btn.dataset.tab;
+
+                // Update active button
+                document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+
+                // Update active content
+                document.querySelectorAll('.tab-content').forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(tabName).classList.add('active');
+
+                // Trigger chart resize
+                setTimeout(() => {
+                    if (chartsInstances.goalsProgress) chartsInstances.goalsProgress.resize();
+                    if (chartsInstances.netPosition) chartsInstances.netPosition.resize();
+                }, 100);
+            });
+        });
+
+        // ============================================
+        // SETTINGS MODAL
+        // ============================================
+        const settingsBtn = document.getElementById('settingsBtn');
+        const settingsModal = document.getElementById('settingsModal');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const saveBtn = document.getElementById('saveBtn');
+        const csvUrlInput = document.getElementById('csvUrlInput');
+        const demoToggle = document.getElementById('demoToggle');
+        const dataBadge = document.getElementById('dataBadge');
+
+        settingsBtn.addEventListener('click', () => {
+            csvUrlInput.value = CONFIG.GOOGLE_SHEET_CSV_URL;
+            if (CONFIG.DEMO_MODE) {
+                demoToggle.classList.add('active');
+            } else {
+                demoToggle.classList.remove('active');
+            }
+            settingsModal.classList.add('active');
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            settingsModal.classList.remove('active');
+        });
+
+        demoToggle.addEventListener('click', () => {
+            demoToggle.classList.toggle('active');
+        });
+
+        saveBtn.addEventListener('click', async () => {
+            CONFIG.GOOGLE_SHEET_CSV_URL = csvUrlInput.value.trim();
+            CONFIG.DEMO_MODE = demoToggle.classList.contains('active');
+
+            settingsModal.classList.remove('active');
+
+            // Reload data
+            await loadData();
+            updateDataBadge();
+        });
+
+        modalBg = settingsModal;
+        modalBg.addEventListener('click', (e) => {
+            if (e.target === modalBg) {
+                modalBg.classList.remove('active');
+            }
+        });
+
+        function updateDataBadge() {
+            if (CONFIG.DEMO_MODE) {
+                dataBadge.textContent = 'Demo Data';
+                dataBadge.style.background = 'rgba(0, 212, 170, 0.1)';
+                dataBadge.style.color = '#7BA05B';
+            } else {
+                dataBadge.textContent = 'Live Data';
+                dataBadge.style.background = 'rgba(255, 217, 61, 0.1)';
+                dataBadge.style.color = '#D4A843';
+            }
+        }
+
+        // ============================================
+        // DATA LOADING
+        // ============================================
+        async function loadData() {
+            if (CONFIG.DEMO_MODE) {
+                currentData = generateDemoData();
+                goalsData = generateDemoGoals();
+                renderPage();
+            } else if (CONFIG.GOOGLE_SHEET_CSV_URL) {
+                try {
+                    // Use Papa Parse to fetch and parse CSV
+                    Papa.parse(CONFIG.GOOGLE_SHEET_CSV_URL, {
+                        download: true,
+                        header: false,
+                        complete: (results) => {
+                            parseCSVData(results.data);
+                            renderPage();
+                        },
+                        error: (error) => {
+                            alert(`Error loading CSV: ${error.message}`);
+                            CONFIG.DEMO_MODE = true;
+                            currentData = generateDemoData();
+                            goalsData = generateDemoGoals();
+                            renderPage();
+                        }
+                    });
+                } catch (error) {
+                    console.error('Error loading data:', error);
+                    CONFIG.DEMO_MODE = true;
+                    currentData = generateDemoData();
+                    goalsData = generateDemoGoals();
+                    renderPage();
+                }
+            } else {
+                CONFIG.DEMO_MODE = true;
+                currentData = generateDemoData();
+                goalsData = generateDemoGoals();
+                renderPage();
+            }
+        }
+
+        function parseCSVData(rows) {
+            // Skip first few rows of headers
+            let dataStartRow = 0;
+            for (let i = 0; i < Math.min(5, rows.length); i++) {
+                if (rows[i][0] && rows[i][0].toLowerCase().includes('month') ||
+                    rows[i][0] && !isNaN(parseFloat(rows[i][1]))) {
+                    dataStartRow = i + 1;
+                    break;
+                }
+            }
+
+            const monthData = [];
+            for (let i = dataStartRow; i < rows.length; i++) {
+                const row = rows[i];
+                if (!row[0] || row[0].trim() === '') continue;
+
+                monthData.push({
+                    month: row[0],
+                    monthNum: i - dataStartRow,
+                    takeHomePay: parseFloat(row[1]) || 0,
+                    pre401k: parseFloat(row[2]) || 0,
+                    preHSA: parseFloat(row[3]) || 0,
+                    trueIncome: parseFloat(row[4]) || 0,
+                    totalExpenses: parseFloat(row[5]) || 0,
+                    amountSaved: parseFloat(row[6]) || 0,
+                    savingsRate: parseFloat(row[7]) || 0,
+                    dryPowder: parseFloat(row[8]) || 0,
+                    hsaCurrent: parseFloat(row[9]) || 0,
+                    hsaOld: parseFloat(row[10]) || 0,
+                    retirement401k: parseFloat(row[11]) || 0,
+                    vanguardRetirement: parseFloat(row[12]) || 0,
+                    fund22: parseFloat(row[13]) || 0,
+                    searchFund: parseFloat(row[14]) || 0,
+                    bitcoin: parseFloat(row[15]) || 0,
+                    totalAssets: parseFloat(row[16]) || 0,
+                    studentLoans: parseFloat(row[17]) || 0,
+                    totalLiabilities: parseFloat(row[18]) || 0,
+                    netPosition: parseFloat(row[19]) || 0,
+                });
+            }
+
+            currentData = monthData;
+
+            // Try to load goals data from another tab
+            goalsData = generateDemoGoals(); // Fallback to demo goals
+        }
+
+        function renderPage() {
+            renderGoalsPage();
+            renderBalanceSheetPage();
+        }
+
+        // ============================================
+        // INITIALIZATION
+        // ============================================
+        document.addEventListener('DOMContentLoaded', () => {
+            updateDataBadge();
+            loadData();
+
+            // Update month indicator
+            const now = new Date();
+            const monthStr = now.toLocaleString('en-US', { month: 'long' });
+            const yearStr = now.getFullYear();
+            document.getElementById('monthIndicator').textContent = `Tracking progress through ${monthStr} ${yearStr}`;
+        });
+    </script>
+
+    <!-- Formula Section -->
+    <div class="formula-section">
+        <div class="formula-title">How Savings Rate is Calculated</div>
+        <div class="formula-box">
+            Savings Rate = (Pre-tax Deductions + Amount Saved) ÷ (Take-Home Pay + Pre-tax Deductions)
+        </div>
+        <div class="formula-definitions">
+            <div><strong>Take-Home Pay</strong> — The amount deposited into your bank account each month (after taxes and deductions)</div>
+            <div><strong>Pre-tax Deductions</strong> — 401k contributions + HSA contributions (deducted from paycheck before taxes)</div>
+            <div><strong>Amount Saved</strong> — How much you allocate to savings and investments each month from your take-home pay</div>
+            <div><strong>Total True Income</strong> — Take-Home Pay + Pre-tax Deductions (your real earning power)</div>
+        </div>
+    </div>
+</body>
+</html>
